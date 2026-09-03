@@ -1,5 +1,21 @@
 use super::*;
 
+#[utoipa::path(
+  get,
+  path = "/health",
+  tag = "health",
+  description = "Report the health of the chromad daemon.",
+  responses(
+    (
+      status = StatusCode::NO_CONTENT,
+      description = "The daemon is healthy and ready to accept requests."
+    )
+  )
+)]
+pub(crate) async fn health() -> StatusCode {
+  StatusCode::NO_CONTENT
+}
+
 #[derive(Debug, Parser)]
 pub(crate) struct Server {
   #[arg(
@@ -23,7 +39,7 @@ pub(crate) struct Server {
 impl Server {
   fn app(manager: Arc<Mutex<SessionManager>>) -> Router {
     Router::new()
-      .route("/health", get(|| async { StatusCode::NO_CONTENT }))
+      .route("/health", get(health))
       .route("/sessions", get(sessions::list))
       .route(
         "/sessions/{id}",
@@ -32,6 +48,26 @@ impl Server {
           .delete(sessions::kill),
       )
       .route("/session/{id}", get(cdp::connect))
+      .merge(
+        Scalar::with_url("/docs", Documentation::openapi()).custom_html(r#"
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8"/>
+          <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <meta name="description" content="API documentation for chromad."/>
+          <title>API - chromad</title>
+        </head>
+        <body>
+          <script id="api-reference" type="application/json">
+            $spec
+          </script>
+          <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+        </body>
+        </html>
+        "#),
+      )
       .with_state(manager)
   }
 

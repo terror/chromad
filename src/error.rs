@@ -8,9 +8,12 @@ pub(crate) enum Error {
   NotFound(String),
 }
 
-#[derive(Deserialize, Serialize)]
-struct ErrorBody {
+/// JSON body returned by the daemon for any non-successful response.
+#[derive(Deserialize, Serialize, ToSchema)]
+pub(crate) struct ErrorBody {
+  /// Human readable description of the error.
   error: String,
+  /// HTTP status code of the response.
   status: u16,
 }
 

@@ -1,5 +1,35 @@
 use super::*;
 
+#[utoipa::path(
+  get,
+  path = "/session/{id}",
+  tag = "cdp",
+  description = "Establish a WebSocket connection to the Chrome DevTools Protocol endpoint of an existing Chromium session. After the connection is upgraded, Chrome DevTools Protocol messages are proxied bidirectionally between the caller and Chromium.",
+  params(
+    (
+      "id" = String,
+      Path,
+      description = "Session identifier.",
+      example = "github"
+    )
+  ),
+  responses(
+    (
+      status = StatusCode::SWITCHING_PROTOCOLS,
+      description = "The connection was upgraded to a WebSocket and proxied to the session's Chrome DevTools Protocol endpoint."
+    ),
+    (
+      status = StatusCode::NOT_FOUND,
+      description = "A session with the given identifier does not exist.",
+      body = ErrorBody
+    ),
+    (
+      status = StatusCode::INTERNAL_SERVER_ERROR,
+      description = "Internal server error.",
+      body = ErrorBody
+    )
+  )
+)]
 pub(crate) async fn connect(
   State(manager): State<Arc<Mutex<SessionManager>>>,
   AxumPath(id): AxumPath<String>,

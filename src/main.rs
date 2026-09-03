@@ -15,7 +15,8 @@ use {
   clap::Parser,
   client::Client,
   directories::ProjectDirs,
-  error::Error,
+  documentation::Documentation,
+  error::{Error, ErrorBody},
   futures_util::{SinkExt, StreamExt},
   reqwest::{Client as ReqwestClient, Response as ReqwestResponse},
   serde::{Deserialize, Serialize, de::DeserializeOwned},
@@ -51,12 +52,15 @@ use {
   },
   tracing::{Level, info, warn},
   tracing_subscriber::EnvFilter,
+  utoipa::{OpenApi, ToSchema},
+  utoipa_scalar::{Scalar, Servable},
 };
 
 mod arguments;
 mod cdp;
 mod chromium;
 mod client;
+mod documentation;
 mod error;
 mod server;
 mod session;

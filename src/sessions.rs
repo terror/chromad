@@ -1,5 +1,41 @@
 use super::*;
 
+#[utoipa::path(
+  post,
+  path = "/sessions/{id}",
+  tag = "sessions",
+  description = "Launch a new persistent Chromium session with the given session identifier.",
+  params(
+    (
+      "id" = String,
+      Path,
+      description = "Session identifier. Must be 1-64 characters, start with an ASCII letter or number, and contain only ASCII letters, numbers, '-', '_', or '.'.",
+      example = "github"
+    )
+  ),
+  responses(
+    (
+      status = StatusCode::CREATED,
+      description = "The session was created successfully.",
+      body = SessionInfo
+    ),
+    (
+      status = StatusCode::BAD_REQUEST,
+      description = "The session identifier is invalid.",
+      body = ErrorBody
+    ),
+    (
+      status = StatusCode::CONFLICT,
+      description = "A session with the given identifier already exists or is currently being created.",
+      body = ErrorBody
+    ),
+    (
+      status = StatusCode::INTERNAL_SERVER_ERROR,
+      description = "Internal server error.",
+      body = ErrorBody
+    )
+  )
+)]
 pub(crate) async fn create(
   State(manager): State<Arc<Mutex<SessionManager>>>,
   AxumPath(id): AxumPath<String>,
@@ -63,6 +99,37 @@ pub(crate) async fn create(
   Ok((StatusCode::CREATED, Json(info)))
 }
 
+#[utoipa::path(
+  get,
+  path = "/sessions/{id}",
+  tag = "sessions",
+  description = "Get information about an existing Chromium session.",
+  params(
+    (
+      "id" = String,
+      Path,
+      description = "Session identifier.",
+      example = "github"
+    )
+  ),
+  responses(
+    (
+      status = StatusCode::OK,
+      description = "Information about the session.",
+      body = SessionInfo
+    ),
+    (
+      status = StatusCode::NOT_FOUND,
+      description = "A session with the given identifier does not exist.",
+      body = ErrorBody
+    ),
+    (
+      status = StatusCode::INTERNAL_SERVER_ERROR,
+      description = "Internal server error.",
+      body = ErrorBody
+    )
+  )
+)]
 pub(crate) async fn inspect(
   State(manager): State<Arc<Mutex<SessionManager>>>,
   AxumPath(id): AxumPath<String>,
@@ -78,6 +145,36 @@ pub(crate) async fn inspect(
   Ok(Json(session.info(&manager.public_ws_origin)))
 }
 
+#[utoipa::path(
+  delete,
+  path = "/sessions/{id}",
+  tag = "sessions",
+  description = "Terminate an existing Chromium session. The session's user data directory is preserved.",
+  params(
+    (
+      "id" = String,
+      Path,
+      description = "Session identifier.",
+      example = "github"
+    )
+  ),
+  responses(
+    (
+      status = StatusCode::NO_CONTENT,
+      description = "The session was terminated successfully."
+    ),
+    (
+      status = StatusCode::NOT_FOUND,
+      description = "A session with the given identifier does not exist.",
+      body = ErrorBody
+    ),
+    (
+      status = StatusCode::INTERNAL_SERVER_ERROR,
+      description = "Internal server error.",
+      body = ErrorBody
+    )
+  )
+)]
 pub(crate) async fn kill(
   State(manager): State<Arc<Mutex<SessionManager>>>,
   AxumPath(id): AxumPath<String>,
@@ -98,6 +195,24 @@ pub(crate) async fn kill(
   Ok(StatusCode::NO_CONTENT)
 }
 
+#[utoipa::path(
+  get,
+  path = "/sessions",
+  tag = "sessions",
+  description = "List all running Chromium sessions, ordered by session identifier.",
+  responses(
+    (
+      status = StatusCode::OK,
+      description = "All running Chromium sessions.",
+      body = Vec<SessionInfo>
+    ),
+    (
+      status = StatusCode::INTERNAL_SERVER_ERROR,
+      description = "Internal server error.",
+      body = ErrorBody
+    )
+  )
+)]
 pub(crate) async fn list(
   State(manager): State<Arc<Mutex<SessionManager>>>,
 ) -> Result<Json<Vec<SessionInfo>>> {
