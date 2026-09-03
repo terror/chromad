@@ -44,8 +44,6 @@ install:
 
 [group: 'dev']
 install-dev-deps:
-  rustup install nightly
-  rustup update nightly
   cargo install cargo-watch
 
 [group: 'release']
