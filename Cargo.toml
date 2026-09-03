@@ -1,6 +1,50 @@
 [package]
 name = "chromad"
 version = "0.1.0"
+description = "A daemon for persistent chromium sessions"
+authors = ["Liam <liam@scalzulli.com>"]
+license = "CC0-1.0"
+homepage = "https://github.com/terror/chromad"
+repository = "https://github.com/terror/chromad"
 edition = "2024"
+categories = ["command-line-utilities", "development-tools"]
+keywords = ["browser", "chromium", "automation", "cdp"]
+resolver = "2"
+
+[lints]
+workspace = true
+
+[profile.release]
+codegen-units = 1
+lto = true
+
+[workspace]
+members = ["."]
+
+[workspace.lints.rust]
+unreachable_pub = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+arbitrary-source-item-ordering = "deny"
+pedantic = { level = "deny", priority = -1 }
+too_many_lines = "allow"
+wildcard_imports = "allow"
 
 [dependencies]
+anyhow = "1.0.104"
+axum = { version = "0.8.9", features = ["ws"] }
+clap = { version = "4.6.6", features = ["derive", "env"] }
+directories = "6.0.0"
+futures-util = "0.3.34"
+reqwest = { version = "0.12.28", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1.0.229", features = ["derive"] }
+tokio = { version = "1.53.1", features = ["full"] }
+tokio-tungstenite = "0.29.0"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+
+[dev-dependencies]
+executable-path = "1.0.1"
+pretty_assertions = "1.4.1"
+tempfile = "3.27.0"
