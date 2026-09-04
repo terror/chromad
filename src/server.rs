@@ -24,7 +24,7 @@ pub(crate) struct Server {
     help = "Path to the Chromium executable",
     value_hint = clap::ValueHint::FilePath
   )]
-  chromium: Option<PathBuf>,
+  chromium: PathBuf,
   #[arg(
     long,
     env = "CHROMAD_DATA_DIR",
@@ -80,7 +80,15 @@ impl Server {
       )
       .init();
 
-    let executable = Chromium::find_executable(self.chromium)?;
+    if !self.chromium.is_file() {
+      return Err(
+        anyhow!(
+          "Chromium executable does not exist: {}",
+          self.chromium.display()
+        )
+        .into(),
+      );
+    }
 
     let data_dir = match self.data_dir {
       Some(data_dir) => data_dir,
@@ -113,7 +121,7 @@ impl Server {
 
     let manager = Arc::new(Mutex::new(SessionManager {
       creating: HashSet::new(),
-      executable,
+      executable: self.chromium,
       headless: self.headless,
       public_ws_origin: format!("ws://{public_address}"),
       sessions: HashMap::new(),

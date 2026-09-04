@@ -27,7 +27,6 @@ use {
   std::{
     backtrace::BacktraceStatus,
     collections::{HashMap, HashSet},
-    env,
     error::Error as StdError,
     fmt::{self, Display, Formatter},
     fs::{File, OpenOptions},

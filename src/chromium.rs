@@ -12,67 +12,6 @@ impl Chromium {
     &self.endpoint
   }
 
-  fn executable(path: PathBuf) -> Result<PathBuf> {
-    if path.is_file() {
-      Ok(path)
-    } else {
-      Err(
-        anyhow!("Chromium executable does not exist: {}", path.display())
-          .into(),
-      )
-    }
-  }
-
-  pub(crate) fn find_executable(
-    configured: Option<PathBuf>,
-  ) -> Result<PathBuf> {
-    if let Some(path) = configured {
-      return Self::executable(path);
-    }
-
-    let application_paths = [
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-      "/Applications/Chromium.app/Contents/MacOS/Chromium",
-      "/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
-      "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-    ];
-
-    for path in application_paths {
-      let path = PathBuf::from(path);
-
-      if path.is_file() {
-        return Ok(path);
-      }
-    }
-
-    for name in [
-      "chromium",
-      "chromium-browser",
-      "google-chrome",
-      "google-chrome-stable",
-      "chrome",
-    ] {
-      if let Some(path) = Self::find_on_path(name) {
-        return Ok(path);
-      }
-    }
-
-    Err(
-      anyhow!(
-        "could not find Chromium; pass --chromium or set CHROMAD_CHROMIUM"
-      )
-      .into(),
-    )
-  }
-
-  fn find_on_path(name: &str) -> Option<PathBuf> {
-    let path = env::var_os("PATH")?;
-
-    env::split_paths(&path)
-      .map(|directory| directory.join(name))
-      .find(|candidate| candidate.is_file())
-  }
-
   pub(crate) fn is_running(&mut self) -> Result<bool> {
     Ok(
       self
